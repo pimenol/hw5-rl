@@ -1,12 +1,13 @@
 import torch
 
+
 def policy_gradient_loss_simple(logp, tensor_r):
     """given the policy (T, N) log-probabilities and (T, N) rewards,
     compute the scalar loss for pytorch based on the policy gradient"""
     policy_loss = torch.tensor(0.)  # placeholder
 
     # with torch.no_grad():
-        # TODO: compute returns of the trajectories from the reward tensor
+    # TODO: compute returns of the trajectories from the reward tensor
 
     # TODO: compute the policy loss with trajectory returns
     return policy_loss
@@ -33,7 +34,7 @@ def policy_gradient_loss_discounted(logp, tensor_r, gamma):
     policy_loss = torch.tensor(0.)  # placeholder
 
     # with torch.no_grad():
-        # TODO: compute discounted returns of the trajectories from the reward tensor
+    # TODO: compute discounted returns of the trajectories from the reward tensor
 
     # TODO: compute the policy loss with discounted returns
     return policy_loss
@@ -47,6 +48,7 @@ def policy_gradient_loss_advantages(logp, advantage_estimates):
     # TODO: compute the policy gradient estimate using the advantage estimate weighting
     return policy_loss
 
+
 def value_loss(values, value_targets):
     """ given (T, N) values, (T, N) value targets, compute the scalar regression loss for pytorch"""
     value_loss = torch.tensor(0.)  # placeholder
@@ -54,11 +56,13 @@ def value_loss(values, value_targets):
     # TODO: compute the value function L2 loss
     return value_loss
 
+
 def ppo_loss(p_ratios, advantage_estimates, epsilon):
     """ given (T, N) p_ratios probability ratios, (T, N) advantage_estimates, and epsilon clipping ratio,
     compute the scalar loss for pytorch based on the PPO surrogate objective"""
     policy_loss = torch.tensor(0.)  # placeholder
 
     # TODO: compute the PPO loss
-    return policy_loss
 
+
+    return policy_loss
