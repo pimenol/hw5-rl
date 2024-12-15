@@ -1,5 +1,5 @@
 from gymnasium import utils
-from .mujoco_env_custom import extendedEnv
+from .mujoco_env_custom import extendedEnv, DEFAULT_HEIGHT, DEFAULT_WIDTH
 from .model_generation import mjcf_to_mjmodel, make_walker_sim
 from gymnasium.spaces import Box
 import numpy as np
@@ -24,8 +24,8 @@ class WalkerEnv(extendedEnv, utils.EzPickle):
 
     def __init__(self, config, **kwargs):
         utils.EzPickle.__init__(self, **kwargs)
-        self.width = config.get('width', 64)
-        self.height = config.get('height', 64)
+        self.width = config.get('width', DEFAULT_WIDTH)
+        self.height = config.get('height', DEFAULT_HEIGHT)
 
         # toggle visualization window
         if config.get('vis', 1):

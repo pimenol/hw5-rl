@@ -8,13 +8,13 @@ from gymnasium.spaces import Space
 from os import path
 from threading import Lock
 
-DEFAULT_HEIGHT = 480
-DEFAULT_WIDTH = 640
+DEFAULT_HEIGHT = 720
+DEFAULT_WIDTH = 1280
 
 
 class extended_Viewer(WindowViewer):
-    def __init__(self, model, data):
-        super().__init__(model, data)
+    def __init__(self, model, data, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT):
+        super().__init__(model, data, width, height)
         self._gui_lock = Lock()
         self._button_left_pressed = False
         self._button_right_pressed = False
@@ -129,12 +129,12 @@ class extendedEnv(MujocoEnv):
 
         if mode == 'human':
             if self.viewer is None:
-                self.viewer = extended_Viewer(self.model, self.data)
+                self.viewer = extended_Viewer(self.model, self.data, self.width, self.height)
             self.viewer.render()
         elif mode in ['rgb_array', 'depth_array']:
             if self.viewer is None:
                 from gymnasium.envs.mujoco.mujoco_rendering import OffScreenViewer
-                self.viewer = OffScreenViewer(self.model, self.data)
+                self.viewer = OffScreenViewer(self.model, self.data, self.width, self.height)
             return self.viewer.render_to_array(camera_id=self.camera_id, depth=(mode == 'depth_array'))
 
     def close(self):

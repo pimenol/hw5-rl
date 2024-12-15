@@ -1,5 +1,5 @@
 from gymnasium import utils
-from .mujoco_env_custom import extendedEnv
+from .mujoco_env_custom import extendedEnv, DEFAULT_WIDTH, DEFAULT_HEIGHT
 from .model_generation import mjcf_to_mjmodel, make_pendulum_sim
 from gymnasium.spaces import Box
 import numpy as np
@@ -14,8 +14,8 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
 
     def __init__(self, config, **kwargs):
         utils.EzPickle.__init__(self, **kwargs)
-        self.width = config.get('width', 64)
-        self.height = config.get('height', 64)
+        self.width = config.get('width', DEFAULT_WIDTH)
+        self.height = config.get('height', DEFAULT_HEIGHT)
 
         if config.get('vis', 1):
             self.render_mode = 'human'
