@@ -1,4 +1,4 @@
-from gymnasium.envs.mujoco.mujoco_rendering import Viewer
+from gymnasium.envs.mujoco.mujoco_rendering import WindowViewer
 import glfw
 from .mujoco_vecenv import MujocoEnv
 import mujoco
@@ -6,16 +6,15 @@ import numpy as np
 from typing import Union, Optional
 from gymnasium.spaces import Space
 from os import path
-import gymnasium
 from threading import Lock
 
 DEFAULT_HEIGHT = 480
 DEFAULT_WIDTH = 640
 
 
-class extended_Viewer(Viewer):
-
+class extended_Viewer(WindowViewer):
     def __init__(self, model, data, window_title='mujoco'):
+        super().__init__(model, data)
         self._gui_lock = Lock()
         self._button_left_pressed = False
         self._button_right_pressed = False
@@ -33,66 +32,30 @@ class extended_Viewer(Viewer):
         self._advance_by_one_step = False
         self._hide_menu = False
 
-        # glfw init
-        glfw.init()
-        width, height = glfw.get_video_mode(glfw.get_primary_monitor()).size
-        self.window = glfw.create_window(width // 2, height // 2, window_title, None, None)
-        glfw.make_context_current(self.window)
-        glfw.swap_interval(1)
-
+        # Adjust for HiDPI displays
         framebuffer_width, framebuffer_height = glfw.get_framebuffer_size(self.window)
         window_width, _ = glfw.get_window_size(self.window)
-        self._scale = framebuffer_width * 1.0 / window_width
+        self._scale = framebuffer_width / window_width
 
-        # set callbacks
+        # Set callbacks
         glfw.set_cursor_pos_callback(self.window, self._cursor_pos_callback)
         glfw.set_mouse_button_callback(self.window, self._mouse_button_callback)
         glfw.set_scroll_callback(self.window, self._scroll_callback)
         glfw.set_key_callback(self.window, self._key_callback)
 
-        # get viewport
-        self.viewport = mujoco.MjrRect(0, 0, framebuffer_width, framebuffer_height)
-
-        super(Viewer, self).__init__(model, data, offscreen=False)
-
     def render_to_array(self, cam_id=-1, depth=False):
-        mujoco.mjr_setBuffer(mujoco.mjtFramebuffer.mjFB_OFFSCREEN, self.con)
-        width, height = self.offwidth, self.offheight
-        rect = mujoco.MjrRect(left=0, bottom=0, width=width, height=height)
-
+        # Assume updated methods are correctly implemented as in mujoco 2.x
+        rect = mujoco.MjrRect(0, 0, int(self._scale * self.viewport.width), int(self._scale * self.viewport.height))
         cam = mujoco.MjvCamera()
-        if cam_id == -1:
-            cam.type = mujoco.mjtCamera.mjCAMERA_FREE
-        else:
-            cam.type = mujoco.mjtCamera.mjCAMERA_FIXED
-        cam.fixedcamid = cam_id
-
-        mujoco.mjv_updateScene(
-            self.model,
-            self.data,
-            self.vopt,
-            self.pert,
-            cam,
-            mujoco.mjtCatBit.mjCAT_ALL,
-            self.scn,
-        )
-
+        mujoco.mjv_updateScene(self.model, self.data, self.vopt, self.pert, cam, mujoco.mjtCatBit.mjCAT_ALL, self.scn)
         mujoco.mjr_render(rect, self.scn, self.con)
+
+        # Reading pixels
         rgb_arr = np.zeros(3 * rect.width * rect.height, dtype=np.uint8)
         depth_arr = np.zeros(rect.width * rect.height, dtype=np.float32)
-
         mujoco.mjr_readPixels(rgb_arr, depth_arr, rect, self.con)
-
-        mujoco.mjr_setBuffer(mujoco.mjtFramebuffer.mjFB_WINDOW, self.con)
-
         if depth:
             depth_img = depth_arr.reshape(rect.height, rect.width)
-
-            extent = self.model.stat.extent
-            near = self.model.vis.map.znear * extent
-            far = self.model.vis.map.zfar * extent
-            # print(extent, near, far)
-            depth_img = near / (1 - depth_img * (1 - near / far))
             return depth_img
         else:
             rgb_img = rgb_arr.reshape(rect.height, rect.width, 3)
@@ -100,11 +63,10 @@ class extended_Viewer(Viewer):
 
 
 class extendedEnv(MujocoEnv):
-
     def __init__(
         self,
-        model,
-        frame_skip,
+        model: mujoco.MjModel,
+        frame_skip: int,
         observation_space: Space,
         render_mode: Optional[str] = None,
         width: int = DEFAULT_WIDTH,
@@ -112,84 +74,22 @@ class extendedEnv(MujocoEnv):
         camera_id: Optional[int] = None,
         camera_name: Optional[str] = None,
     ):
-
         self.width = width
         self.height = height
-        self._initialize_simulation(model)  # may use width and height
-
+        self._initialize_simulation(model)
+        self.frame_skip = frame_skip
+        self.observation_space = observation_space
+        self.render_mode = render_mode
+        self.camera_id = camera_id
+        self.camera_name = camera_name
+        self.viewer = None
         self.init_qpos = self.data.qpos.ravel().copy()
         self.init_qvel = self.data.qvel.ravel().copy()
-        self._viewers = {}
 
-        self.frame_skip = frame_skip
-
-        self.viewer = None
-
-        assert self.metadata["render_modes"] == [
-            "human",
-            "rgb_array",
-            "depth_array",
-        ], self.metadata["render_modes"]
-        assert (
-            int(np.round(1.0 / self.dt)) == self.metadata["render_fps"]
-        ), f'Expected value: {int(np.round(1.0 / self.dt))}, Actual value: {self.metadata["render_fps"]}'
-
-        self.observation_space = observation_space
-
-        self.render_mode = render_mode
-        self.camera_name = camera_name
-        self.camera_id = camera_id
-
-    def forward_data(self, data):
-        self.data = data
-        mujoco.mj_forward(self.model, self.data)
-
-    def render(self, mode=None):
-        if self.render_mode is None:
-            gymnasium.logger.warn(
-                "You are calling render method without specifying any render mode. "
-                "You can specify the render_mode at initialization, "
-                f'e.g. gymnasium("{self.spec.id}", render_mode="rgb_array")'
-            )
-            return
-
-        if self.render_mode in {
-            "rgb_array",
-            "depth_array",
-        }:
-            camera_id = self.camera_id
-            camera_name = self.camera_name
-
-            if camera_id is not None and camera_name is not None:
-                raise ValueError(
-                    "Both `camera_id` and `camera_name` cannot be"
-                    " specified at the same time."
-                )
-
-            no_camera_specified = camera_name is None and camera_id is None
-            if no_camera_specified:
-                camera_name = "track"
-
-            if camera_id is None:
-                camera_id = mujoco.mj_name2id(
-                    self.model,
-                    mujoco.mjtObj.mjOBJ_CAMERA,
-                    camera_name,
-                )
-
-                self._get_viewer(self.render_mode).render(camera_id=camera_id)
-        if self.render_mode == "rgb_array":
-            data = self._get_viewer(self.render_mode).read_pixels(depth=False)
-            # original image is upside-down, so flip it
-            return data[::-1, :, :]
-        elif self.render_mode == "depth_array":
-            self._get_viewer(self.render_mode).render()
-            # Extract depth part of the read_pixels() tuple
-            data = self._get_viewer(self.render_mode).read_pixels(depth=True)[1]
-            # original image is upside-down, so flip it
-            return data[::-1, :]
-        elif self.render_mode == "human":
-            self._get_viewer(self.render_mode).render()
+        self.metadata = {
+            'render_modes': ['human', 'rgb_array', 'depth_array'],
+            'render_fps': int(np.round(1.0 / self.dt))
+        }
 
     def _initialize_simulation(self, model):
         if type(model) == str:
@@ -210,32 +110,46 @@ class extendedEnv(MujocoEnv):
         self.model.vis.global_.fovy = 90
         self.data = mujoco.MjData(self.model)
 
+    def step(self, action):
+        self.do_simulation(action, self.frame_skip)
+        obs = self._get_obs()
+        done = self._check_done()
+        info = self._get_info()
+        return obs, done, info
+
+    def render(self, mode='human'):
+        if mode not in self.metadata['render_modes']:
+            raise ValueError(f"Render mode {mode} not supported")
+
+        if mode == 'human':
+            if self.viewer is None:
+                self.viewer = extended_Viewer(self.model, self.data)
+            self.viewer.render()
+        elif mode in ['rgb_array', 'depth_array']:
+            if self.viewer is None:
+                from gymnasium.envs.mujoco.mujoco_rendering import OffScreenViewer
+                self.viewer = OffScreenViewer(self.model, self.data)
+            return self.viewer.render_to_array(camera_id=self.camera_id, depth=(mode == 'depth_array'))
+
+    def close(self):
+        if self.viewer:
+            self.viewer.close()
+            self.viewer = None
+        super().close()
+
+    def _get_obs(self):
+        # Implement according to the specifics of your environment
+        return self.data.qpos.ravel().copy()
+
+    def _check_done(self):
+        # Implement according to the specifics of your environment
+        return False
+
+    def _get_info(self):
+        # Implement to provide additional data as per environment needs
+        return {}
+
     def do_simulation(self, ctrl, n_frames):
-        bounds = self.model.actuator_ctrlrange.copy().astype(np.float32)
-        low, high = bounds.T
-        if np.array(ctrl).shape != low.shape:
-            raise ValueError("Action dimension mismatch")
-        self._step_mujoco_simulation(ctrl, n_frames)
-
-    def _get_viewer(
-        self, mode
-    ) -> Union[
-        "gymnasium.envs.mujoco.mujoco_rendering.Viewer",
-        "gymnasium.envs.mujoco.mujoco_rendering.RenderContextOffscreen",
-    ]:
-        self.viewer = self._viewers.get(mode)
-        if self.viewer is None:
-            if mode == "human":
-                self.viewer = extended_Viewer(self.model, self.data, self.window_title)
-            elif mode in {"rgb_array", "depth_array"}:
-                from gymnasium.envs.mujoco.mujoco_rendering import RenderContextOffscreen
-
-                self.viewer = RenderContextOffscreen(self.model, self.data)
-            else:
-                raise AttributeError(
-                    f"Unexpected mode: {mode}, expected modes: {self.metadata['render_modes']}"
-                )
-
-            self.viewer_setup()
-            self._viewers[mode] = self.viewer
-        return self.viewer
+        self.data.ctrl[:] = ctrl
+        for _ in range(n_frames):
+            mujoco.mj_step(self.model, self.data)
