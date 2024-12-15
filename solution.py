@@ -16,7 +16,9 @@ def discount_cum_sum(rewards, gamma):
     """rewards is (T, N) tensor, gamma is scalar, output should be (T, N) tensor.
     Here we want to compute the discounted trajectory returns at each timestep.
     At each timestep, produce the exponentially weighted sum of (only) the following rewards on a given trajectory
-    i.e. $R(\tau_i, t) = \sum_{t'=t}^{T-1} \gamma^{t'-t} r_{t'}$"""
+    i.e.
+    $R(\tau_i, t) = \sum_{t'=t}^{T-1} \gamma^{t'-t} r_{t'}$
+    """
     T = rewards.shape[0]
     returns = torch.zeros_like(rewards)  # placeholder
 
