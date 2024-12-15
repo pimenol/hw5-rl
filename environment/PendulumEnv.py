@@ -9,6 +9,7 @@ base_config = {
     'vis': True
 }
 
+
 class PendulumEnv(extendedEnv, utils.EzPickle):
 
     def __init__(self, config, **kwargs):
@@ -18,7 +19,6 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
 
         if config.get('vis', 1):
             self.render_mode = 'human'
-        self.window_title = config.get('window_title', 'mujoco')
 
         # get generate environment parameters
         self.double = config.get('double', False)
@@ -44,7 +44,7 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
                 "rgb_array",
                 "depth_array",
             ],
-            "render_fps": self.frequency//self.skip_steps,
+            "render_fps": self.frequency // self.skip_steps,
         }
 
         extendedEnv.__init__(
@@ -54,7 +54,7 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
             render_mode=self.render_mode,
             observation_space=self.observation_space,
             width=self.width,
-            height=self.height
+            height=self.height,
         )
 
         self.step_counter = 0
@@ -70,8 +70,8 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
 
         for i in range(self.num_pends):
             offset = 3 if self.double else 2
-            pos = self.data.qpos[i*offset:offset*(i+1)]
-            vel = self.data.qvel[i*offset:offset*(i+1)]
+            pos = self.data.qpos[i * offset:offset * (i + 1)]
+            vel = self.data.qvel[i * offset:offset * (i + 1)]
             state_i = np.concatenate((pos, vel), dtype=np.float32)
             states.append(state_i)
 
@@ -96,8 +96,8 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
         states = []
         offset = 3 if self.double else 2
         for i in range(self.num_pends):
-            pos = self.data.qpos[i*offset:offset*(i+1)]
-            vel = self.data.qvel[i*offset:offset*(i+1)]
+            pos = self.data.qpos[i * offset:offset * (i + 1)]
+            vel = self.data.qvel[i * offset:offset * (i + 1)]
             state_i = np.concatenate((pos, vel), dtype=np.float32)
             states.append(state_i)
         return states
@@ -109,11 +109,11 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
 
         offset = 3 if self.double else 2
         if self.hardcore:
-            qpos[0::offset] = np.random.rand(self.num_pends)*1 - 0.5
+            qpos[0::offset] = np.random.rand(self.num_pends) * 1 - 0.5
             qpos[1::offset] = -np.pi
         else:
-            qpos[0::offset] = np.random.rand(self.num_pends)*0.5 - 0.25
-            qpos[1::offset] = np.random.rand(self.num_pends)*0.1 - 0.05
+            qpos[0::offset] = np.random.rand(self.num_pends) * 0.5 - 0.25
+            qpos[1::offset] = np.random.rand(self.num_pends) * 0.1 - 0.05
 
         self.set_state(qpos, qvel)  # set the mujoco state
         self.step_counter = 0
@@ -124,9 +124,3 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
         """reset all the pendulums"""
         obs = self.reset_model()
         return obs
-
-    def viewer_setup(self):
-        assert self.viewer is not None
-        v = self.viewer
-        v.cam.trackbodyid = 0
-        v.cam.distance = self.model.stat.extent

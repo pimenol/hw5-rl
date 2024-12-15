@@ -13,7 +13,7 @@ DEFAULT_WIDTH = 640
 
 
 class extended_Viewer(WindowViewer):
-    def __init__(self, model, data, window_title='mujoco'):
+    def __init__(self, model, data):
         super().__init__(model, data)
         self._gui_lock = Lock()
         self._button_left_pressed = False
@@ -42,6 +42,12 @@ class extended_Viewer(WindowViewer):
         glfw.set_mouse_button_callback(self.window, self._mouse_button_callback)
         glfw.set_scroll_callback(self.window, self._scroll_callback)
         glfw.set_key_callback(self.window, self._key_callback)
+
+        # Initialize camera position
+        self.cam.azimuth = 90
+        self.cam.elevation = -60
+        self.cam.distance = 5.0
+        self.cam.lookat[:] = [0.0, 0.0, 0.0]
 
     def render_to_array(self, cam_id=-1, depth=False):
         # Assume updated methods are correctly implemented as in mujoco 2.x
