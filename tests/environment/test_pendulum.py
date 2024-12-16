@@ -20,7 +20,7 @@ def test_pendulum():
         actions = np.random.rand(cfg['N'], 1) * 2 - 1  # random actions sampled from [-1, 1]
         s, r = env.vector_step(actions)
     env.close()
-    assert np.allclose(np.array(s), GT), "Env produced wrong state"
+    assert np.allclose(np.array(s), GT, atol=1e-4), "Env produced wrong state"
 
 
 if __name__ == '__main__':

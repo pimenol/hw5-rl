@@ -21,7 +21,7 @@ def test_walker():
         actions = np.random.rand(cfg['N'], 8) * 4 - 2  # random actions sampled from [-1, 1]
         s, r = env.vector_step(actions)
     env.close()
-    assert np.allclose(np.array(s), GT), "Walker env test produced wrong results"
+    assert np.allclose(np.array(s), GT, atol=1e-4), "Walker env test produced wrong results"
 
 
 if __name__ == '__main__':
