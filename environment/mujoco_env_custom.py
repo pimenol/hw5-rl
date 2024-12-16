@@ -13,7 +13,8 @@ DEFAULT_WIDTH = 1280
 
 
 class extended_Viewer(WindowViewer):
-    def __init__(self, model, data, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT):
+    def __init__(self, model, data, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT, show_init_window=False):
+        glfw.window_hint(glfw.VISIBLE, show_init_window)
         super().__init__(model, data, width, height)
         self._gui_lock = Lock()
         self._button_left_pressed = False
@@ -31,6 +32,7 @@ class extended_Viewer(WindowViewer):
         self._loop_count = 0
         self._advance_by_one_step = False
         self._hide_menu = False
+        self.window_visible = show_init_window
 
         # Adjust for HiDPI displays
         framebuffer_width, framebuffer_height = glfw.get_framebuffer_size(self.window)
@@ -43,11 +45,11 @@ class extended_Viewer(WindowViewer):
         glfw.set_scroll_callback(self.window, self._scroll_callback)
         glfw.set_key_callback(self.window, self._key_callback)
 
-        # Initialize camera position
-        self.cam.azimuth = 90
-        self.cam.elevation = -60
-        self.cam.distance = 5.0
-        self.cam.lookat[:] = [0.0, 0.0, 0.0]
+    def render(self):
+        if not self.window_visible:
+            self.window_visible = True
+            glfw.show_window(self.window)
+        super().render()
 
     def render_to_array(self, cam_id=-1, depth=False):
         # Assume updated methods are correctly implemented as in mujoco 2.x
@@ -97,6 +99,14 @@ class extendedEnv(MujocoEnv):
             'render_fps': int(np.round(1.0 / self.dt))
         }
 
+        if self.render_mode == 'human':
+            self.viewer = extended_Viewer(self.model, self.data, self.width, self.height, show_init_window=False)
+        elif self.render_mode in ['rgb_array', 'depth_array']:
+            from gymnasium.envs.mujoco.mujoco_rendering import OffScreenViewer
+            self.viewer = OffScreenViewer(self.model, self.data, self.width, self.height)
+        else:
+            self.viewer = None
+
     def _initialize_simulation(self, model):
         if type(model) == str:
             if model.startswith("/"):
@@ -123,19 +133,13 @@ class extendedEnv(MujocoEnv):
         info = self._get_info()
         return obs, done, info
 
-    def render(self, mode='human'):
-        if mode not in self.metadata['render_modes']:
-            raise ValueError(f"Render mode {mode} not supported")
-
-        if mode == 'human':
-            if self.viewer is None:
-                self.viewer = extended_Viewer(self.model, self.data, self.width, self.height)
+    def render(self):
+        if self.viewer is None:
+            raise ValueError(f"Viewer not initialized, environment initalized with render_mode={self.render_mode}")
+        elif self.render_mode == 'human':
             self.viewer.render()
-        elif mode in ['rgb_array', 'depth_array']:
-            if self.viewer is None:
-                from gymnasium.envs.mujoco.mujoco_rendering import OffScreenViewer
-                self.viewer = OffScreenViewer(self.model, self.data, self.width, self.height)
-            return self.viewer.render_to_array(camera_id=self.camera_id, depth=(mode == 'depth_array'))
+        else:
+            return self.viewer.render_to_array(camera_id=self.camera_id, depth=(self.render_mode == 'depth_array'))
 
     def close(self):
         if self.viewer:

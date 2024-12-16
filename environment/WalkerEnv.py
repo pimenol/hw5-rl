@@ -37,7 +37,6 @@ class WalkerEnv(extendedEnv, utils.EzPickle):
         self.num_walkers = config.get('N', 1)
         self.skip_steps = 1
         self.frequency = 50
-
         self.num_states = 29
         self.num_actions = 8
 
@@ -68,8 +67,12 @@ class WalkerEnv(extendedEnv, utils.EzPickle):
 
         self.step_counter = 0
         self.prev_actions = np.zeros((self.num_walkers, 1))
-
         self.reward_function = config.get('reward_fcn', default_reward)
+        if self.render_mode is not None:
+            self.viewer_setup()
+            self.track = config.get('track', None)
+            if self.track is not None:
+                self.set_cam_to_track_robot(self.track)
         print('Environment ready')
 
     def vector_step(self, actions):
@@ -125,8 +128,15 @@ class WalkerEnv(extendedEnv, utils.EzPickle):
         obs = self.reset_model()
         return obs
 
+    def set_cam_to_track_robot(self, robot_id: int):
+        assert self.viewer is not None
+        self.viewer.cam.type = 1
+        self.viewer.cam.trackbodyid = robot_id
+
     def viewer_setup(self):
         assert self.viewer is not None
-        v = self.viewer
-        v.cam.trackbodyid = 0
-        v.cam.distance = self.model.stat.extent
+        # Initialize camera position
+        self.viewer.cam.azimuth = 90
+        self.viewer.cam.elevation = -60
+        self.viewer.cam.distance = 5.0
+        self.viewer.cam.lookat[:] = [0.0, 0.0, 0.0]

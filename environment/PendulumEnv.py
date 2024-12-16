@@ -19,6 +19,8 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
 
         if config.get('vis', 1):
             self.render_mode = 'human'
+        else:
+            self.render_mode = None
 
         # get generate environment parameters
         self.double = config.get('double', False)
@@ -59,6 +61,8 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
 
         self.step_counter = 0
         self.prev_actions = np.zeros((self.num_pends, 1))
+        if self.render_mode is not None:
+            self.viewer_setup()
         print('Environment ready')
 
     def vector_step(self, actions):
@@ -124,3 +128,11 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
         """reset all the pendulums"""
         obs = self.reset_model()
         return obs
+
+    def viewer_setup(self):
+        assert self.viewer is not None
+        # Initialize camera position
+        self.viewer.cam.azimuth = 90
+        self.viewer.cam.elevation = -60
+        self.viewer.cam.distance = 7.0
+        self.viewer.cam.lookat[:] = [0.0, 0.0, 0.0]

@@ -191,12 +191,13 @@ def make_walker_sim(num_walkers=1, frequency=100):
     arena.compiler.angle = 'radian'
     arena.compiler.inertiafromgeom = True
 
-    map_size = 15
+    map_size = 150
+    grid_repeat = 75
 
     chequered = arena.asset.add('texture', name='checker', type='2d', builtin='checker', width=300,
                                 height=300, rgb1=[.2, .3, .4], rgb2=[.3, .4, .5])
     grid = arena.asset.add('material', name='grid', texture=chequered,
-                           texrepeat=[5, 5], reflectance=.2)
+                           texrepeat=[grid_repeat, grid_repeat], reflectance=.2)
     arena.asset.add('texture', name='skybox', type='skybox', builtin='gradient',
                     rgb1=(.4, .6, .8), rgb2=(0, 0, 0), width=800, height=800, mark="random", markrgb=(1, 1, 1))
     arena.worldbody.add('geom', name='floor', type='plane', size=[map_size, map_size, 0.1], material=grid)
