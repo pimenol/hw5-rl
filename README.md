@@ -6,11 +6,17 @@ This task should provide a minimalist introduction to policy gradient methods fo
 
 ### Code
 
+**Note:** This assignment is tested and confirmed to run **only** on macOS (Intel/Apple Silicon), Linux virtualized in Parallels Desktop and bare-metal Linux. It cannot work natively on Windows and due to module incompatibility issues, is difficult/impossible to get working on WSL or other virtualization solutions (under Windows). CTU computing clusters also cannot be used, as they don't support the necessary OpenGL rendering.
+
+Tried-and-tested are Apple Silicon macOS (14.x/15.x) and Ubuntu 22.04/24.04.
+
 Use python 3.10/11/12 for this assignment. The script `make_venv.sh` will create a virtual environment with the necessary dependencies.
 
 You can install the necessary libraries yourself by running `pip install -r requirements.txt`.
 
-Please make sure to use the versions specified in the `requirements.txt` file.
+Please make sure to use versions specified in the `requirements.txt` file.
+
+When using the virtual environment, you have to activate it by running `source rl-homework-venv/bin/activate` (or `source rl-homework-venv/bin/activate.fish` for fish shell) first.
 
 Once this is done, you can test whether the environment is set up correctly by running `python -m pytest -s`.
 
