@@ -40,7 +40,7 @@ This is the mandatory part of the assignment and is worth **10 points** in total
 
 Using the methods you implemented in the first part and the already-provided functions for working with the (pendulum) environment, train a policy for the Walker environment.
 
-**The objective is to travel as far as possible in the positive x-direction in a limited number of steps (TBD).**
+**The objective is to travel as far as possible in the positive x-direction in a limited number of steps (1024 / cca 10 simulation seconds).**
 
 This is evaluated in a tournament with up to 3 additional points awarded as follows:
 
