@@ -26,7 +26,7 @@ This is the mandatory part of the assignment and is worth **10 points** in total
 
 - `policy_gradient_loss_simple` - Vanilla Policy Gradient/REINFORCE - **1 point**
 
-- `discount_cum_sum` - general function for computing discounted cumulative sums - **up to 2 points**, this function will be time-tested, so make sure it is efficient. You will be awarded just 1 point if it is more than 5 times slower than the reference implementation.
+- `discount_cum_sum` - general function for computing discounted cumulative sums - **2 points**
 
 - `policy_gradient_loss_discounted` - Policy Gradient with discounted rewards - **1 point**
 
