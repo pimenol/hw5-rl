@@ -74,6 +74,8 @@ This is evaluated in a tournament with up to 3 additional points awarded as foll
 
 Make sure you follow the exact specification described in `WalkerPolicy.py` and `walker_training.ipynb` to ensure your policy is evaluated correctly.
 
+![walker-xddd](.assets/walker.gif)
+
 ### Troubleshooting
 
 If you run into some issues that you or an LLM of your choice can't resolve, please let me know at `korcadav@fel.cvut.cz`. I will ask my LLM :)
