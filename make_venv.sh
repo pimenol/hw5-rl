@@ -17,14 +17,25 @@ fi
 # Create virtual environment
 python3."$PYTHON_VERSION" -m venv "$VENV_NAME"
 
-# Activate virtual environment
-source "${VENV_NAME}/bin/activate"
-
-# Check if requirements.txt exists
-if [ -f "requirements.txt" ]; then
-    pip install -r requirements.txt
-else
-    echo "Warning: requirements.txt not found"
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to create virtual environment"
+    exit 1
 fi
 
+# Determine OS and set activation script
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    ACTIVATE_SCRIPT="${VENV_NAME}/Scripts/activate"
+else
+    ACTIVATE_SCRIPT="${VENV_NAME}/bin/activate"
+fi
+
+# Activate virtual environment
+source "$ACTIVATE_SCRIPT"
+
+$SHELL install_deps.sh
+
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to install dependencies"
+    exit 1
+fi
 echo "Virtual environment $VENV_NAME created and activated with Python 3.$PYTHON_VERSION"
