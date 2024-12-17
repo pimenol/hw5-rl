@@ -61,8 +61,6 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
 
         self.step_counter = 0
         self.prev_actions = np.zeros((self.num_pends, 1))
-        if self.render_mode is not None:
-            self.viewer_setup()
         print('Environment ready')
 
     def vector_step(self, actions):
@@ -129,7 +127,7 @@ class PendulumEnv(extendedEnv, utils.EzPickle):
         obs = self.reset_model()
         return obs
 
-    def viewer_setup(self):
+    def camera_setup(self):
         assert self.viewer is not None
         # Initialize camera position
         self.viewer.cam.azimuth = 90
