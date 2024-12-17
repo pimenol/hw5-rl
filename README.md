@@ -6,19 +6,35 @@ This task should provide a minimalist introduction to policy gradient methods fo
 
 ### Code
 
-**Note:** This assignment is tested and confirmed to run **only** on macOS (Intel/Apple Silicon), Linux virtualized in Parallels Desktop and bare-metal Linux. It cannot work natively on Windows and due to module incompatibility issues, is difficult/impossible to get working on WSL or other virtualization solutions (under Windows). CTU computing clusters also cannot be used, as they don't support the necessary OpenGL rendering.
+Use Python 3.10/11/12 for this assignment.
 
-Tried-and-tested are Apple Silicon macOS (14.x/15.x) and Ubuntu 22.04/24.04.
+- **If you already have a conda environment set up (e.g. from the previous homework), you can use it. Just install the necessary libraries with `conda install --file requirements.txt`.**
 
-Use python 3.10/11/12 for this assignment. The script `make_venv.sh` will create a virtual environment with the necessary dependencies.
+- If you're on Ubuntu 20.04 or older, you can use deadsnakes (https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) to install a newer version of Python (3.10 or 3.11). Otherwise install it with `apt` (Ubuntu 22.04 and newer).
 
-You can install the necessary libraries yourself by running `pip install -r requirements.txt`.
+- On macOS, homebrew is recommended for installing Python 3.10/11/12.
 
-Please make sure to use versions specified in the `requirements.txt` file.
+- On Windows, install Python through the Microsoft Store, `winget` or with the official installer. The libraries we use unfortunately do not work well with WSL, it is only possible to run the code natively or use a Linux OS. **We do not guarantee it will run on Windows, experience shows that it is highly dependent on the exact hardware you have.**
 
-When using the virtual environment, you have to activate it by running `source rl-homework-venv/bin/activate` (or `source rl-homework-venv/bin/activate.fish` for fish shell) first.
+You can set up a virtual environment for this assignment.
+
+- macOS/Linux:
+  The script `make_venv.sh` will create a virtual environment with the necessary dependencies for Unix systems. Run it with `bash make_venv.sh`. **Make sure python is available in your PATH with the version number, like `python3.10` or `python3.11`.**
+
+- Windows:
+  The script `make_venv.ps1` will create a virtual environment with the necessary dependencies for Windows. Run it with `.\make_venv.ps1` from within powershell. **Make sure python launcher is available in your PATH with the version number, like `py -3.10` or `py -3.11`.**
+
+- When using the virtual environment, you have to activate it first.
+  This is done by running `source rl-homework-venv/bin/activate` (or `source rl-homework-venv/bin/activate.fish` for fish shell) on Unix systems, or `.\rl-homework-venv\Scripts\Activate.ps1` on Windows.
+
+If you don't want to use the virtual environment, you can install the necessary libraries globally by running `pip install -r requirements.txt`(make sure you use the correct pip version for your Python installation).
 
 Once this is done, you can test whether the environment is set up correctly by running `python -m pytest -s`.
+
+You should see something like this:
+
+![pendulums](.assets/pendulums.png)
+![walkers](.assets/walkers.png)
 
 ### Pendulum environment
 
@@ -52,9 +68,9 @@ This is evaluated in a tournament with up to 3 additional points awarded as foll
 
 - **1 point** for traversing least 1 meter in the Walker environment (less than 5 simulation seconds)
 
-- **1 point** if your policy falls within top 50% of the submissions
+- **1 point** if your policy achieves falls within top 50-percentile of the submission distances.
 
-- **1 point** if your policy falls within top 10% of the submissions
+- **1 point** if your policy falls within top 10-percentile of the submission distances.
 
 Make sure you follow the exact specification described in `WalkerPolicy.py` and `walker_training.ipynb` to ensure your policy is evaluated correctly.
 
