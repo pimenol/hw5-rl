@@ -12,8 +12,14 @@ if ($args.Length -eq 1) {
     }
 }
 
+# Check if `py` command is available
+if (-not (Get-Command "py" -ErrorAction SilentlyContinue)) {
+    Write-Error "Error: Python launcher 'py' not found. Make sure Python is installed and added to PATH."
+    exit 1
+}
+
 # Create virtual environment
-python3.$pythonVersion -m venv $venvName
+py -3.$pythonVersion -m venv $venvName
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Error: Failed to create virtual environment"
