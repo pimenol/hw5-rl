@@ -8,7 +8,7 @@ This task should provide a minimalist introduction to policy gradient methods fo
 
 Use Python 3.10/11/12 for this assignment.
 
-- **If you already have a conda environment set up (e.g. from the previous homework), you can use it. Just install the necessary libraries with `conda install --file requirements.txt`.**
+- **If you already have a conda environment set up (e.g. from the previous homework), you can use it. Just install the necessary libraries with `pip install -r requirements.txt`.**
 
 - If you're on Ubuntu 20.04 or older, you can use deadsnakes (https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) to install a newer version of Python (3.10 or 3.11). Otherwise install it with `apt` (Ubuntu 22.04 and newer).
 
@@ -18,16 +18,18 @@ Use Python 3.10/11/12 for this assignment.
 
 You can set up a virtual environment for this assignment.
 
+- Each of the provided scripts listed below accepts an optional argument for the Python version. If you don't provide it, the script will try to use Python 3.11. If you have 3.10 or 3.12 installed, you can specify it with the version number, e.g. `bash make_venv.sh 10` for Python 3.10.
+
 - macOS/Linux:
   The script `make_venv.sh` will create a virtual environment with the necessary dependencies for Unix systems. Run it with `bash make_venv.sh`. **Make sure python is available in your PATH with the version number, like `python3.10` or `python3.11`.**
 
 - Windows:
-  The script `make_venv.ps1` will create a virtual environment with the necessary dependencies for Windows. Run it with `.\make_venv.ps1` from within powershell. **Make sure python launcher is available in your PATH with the version number, like `py -3.10` or `py -3.11`.**
+  The script `make_venv.ps1` will create a virtual environment with the necessary dependencies for Windows. Run it with `.\make_venv.ps1` from within powershell. **Make sure python launcher is available in your PATH with the version number, like `py -3.10` or `py -3.11`.** If powershell complains about script execution policy, you can run the script with `powershell -executionpolicy bypass make_venv.ps1`.
 
 - When using the virtual environment, you have to activate it first.
   This is done by running `source rl-homework-venv/bin/activate` (or `source rl-homework-venv/bin/activate.fish` for fish shell) on Unix systems, or `.\rl-homework-venv\Scripts\Activate.ps1` on Windows.
 
-If you don't want to use the virtual environment, you can install the necessary libraries globally by running `pip install -r requirements.txt`(make sure you use the correct pip version for your Python installation).
+If you don't want to use the virtual environment, you can install the necessary libraries globally by running `pip install -r requirements.txt`(make sure you use the correct pip version for your Python installation). On Linux, pytorch will by default include CUDA support, which you might not want. The script `install_deps.sh` takes care of this. Run it with `bash install_deps.sh`.
 
 Once this is done, you can test whether the environment is set up correctly by running `python -m pytest -s`.
 
@@ -71,6 +73,12 @@ This is evaluated in a tournament with up to 3 additional points awarded as foll
 - **1 point** if your policy achieves falls within top 50-percentile of the submission distances.
 
 - **1 point** if your policy falls within top 10-percentile of the submission distances.
+
+There are 2 **special bounties** that can be awarded to the best-performing policies:
+
+- **2 points** for beating last year's best submission (86.25 meters)
+
+- **2 points** for traveling further than 110 meters
 
 Make sure you follow the exact specification described in `WalkerPolicy.py` and `walker_training.ipynb` to ensure your policy is evaluated correctly.
 
