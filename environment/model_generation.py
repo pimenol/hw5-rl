@@ -218,6 +218,60 @@ def make_walker_sim(num_walkers=1, frequency=100):
     return arena
 
 
+def make_catwalker(id=0, hue=1):
+    rgba = [0, 0, 0, 1]
+    rgba[:3] = hsv_to_rgb([hue, 1, 1])
+    rgba_transparent = [0, 0, 0, 0.6]
+    rgba_transparent[:3] = rgba[:3]
+
+    model = mjcf.RootElement(model='catwalker_%d' % id)
+
+    model.default.geom.type = 'box'
+    model.default.geom.rgba = rgba
+    model.default.geom.conaffinity = 0
+    model.default.geom.contype = 1
+    model.default.geom.condim = 3
+    model.default.geom.friction = (1, 0.5, 0.5)
+    model.default.geom.margin = 0
+
+    model.default.joint.damping = 2
+    model.default.joint.armature = 0.15
+
+    # Body with a tail
+    body = model.worldbody.add('body', name='cat_body%d' % id, pos=(0, 0, 0))
+    body.add('geom', name='torso', type='capsule', size=[0.1, 0.2], mass=1.5, euler=[0, np.pi / 2, 0])
+
+    # Adding a tail
+    tail = body.add('body', name='tail', pos=[-0.3, 0, 0])
+    tail.add('geom', name='tail_geom', type='capsule', fromto=[0, 0, 0, -0.4, 0, 0], size=[0.03], rgba=[0.4, 0.3, 0.3, 1], mass=0.2)
+
+    # Adding ears
+    ear_positions = [[0.1, 0.1, 0.2], [0.1, -0.1, 0.2]]
+    for i, pos in enumerate(ear_positions):
+        ear = body.add('geom', name='ear_%d' % i, type='capsule', pos=pos, size=[0.03, 0.06], rgba=[0.4, 0.3, 0.3, 1])
+
+    # Legs as in the original quadwalker
+    legs = ['lf', 'rf', 'lb', 'rb']
+    positions = [[0.2, 0.13, 0], [0.2, -0.13, 0], [-0.2, 0.13, 0], [-0.2, -0.13, 0]]
+    for i, leg in enumerate(legs):
+        pos = positions[i]
+        x_off = 0.1 if i < 2 else -0.1
+        y_off = 0.1 * (-1)**i
+        thigh = body.add('body', name='%s_thigh' % leg, pos=pos)
+        hip = thigh.add('joint', name='%s_hip' % leg, type='hinge', axis=[0, 0, 1], range=[-0.5, 0.5], limited='true')
+        thigh.add('geom', name='%s_thigh' % leg, type='capsule', fromto=[0, 0, 0, x_off, y_off, 0], size=[0.05], rgba=[0.3, 0.3, 0.3, 1], mass=0.4)
+        shin = thigh.add('body', name='shin_%d' % i, pos=[x_off, y_off, 0])
+
+        knee_axis = [-y_off, x_off, 0]
+
+        knee = shin.add('joint', name='knee_%d' % i, type='hinge', axis=knee_axis, range=[-1, 1], limited='true')
+        shin.add('geom', name='shin_%d' % i, type='capsule', fromto=[0, 0, 0, 0, 0, -0.25], size=[0.03], rgba=[0.3, 0.3, 0.3, 1], mass=0.2)
+
+        model.actuator.add('motor', name='%s_hip_motor%d' % (leg, id), joint=hip, gear=[60, 0, 0, 0, 0, 0], ctrllimited=True, ctrlrange=(-1, 1))
+        model.actuator.add('motor', name='%s_knee_motor%d' % (leg, id), joint=knee, gear=[40, 0, 0, 0, 0, 0], ctrllimited=True, ctrlrange=(-1, 1))
+
+    return model
+
 def mjcf_to_mjmodel(mjcf_model):
     xml_string = mjcf_model.to_xml_string(precision=5)
     # print(xml_string)
