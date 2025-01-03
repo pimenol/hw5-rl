@@ -37,15 +37,11 @@ def discount_cum_sum(rewards: torch.Tensor, gamma: float) -> torch.Tensor:
     Returns:
         discounted_cumulative_returns: (T, N) tensor of discounted cumulative returns
     """
-    T, N = rewards.shape
-    discounted_cumulative_returns = torch.zeros_like(rewards)
-    running_sum = torch.zeros(N)
-
-    for t in reversed(range(T)):
-        running_sum = rewards[t] + gamma * running_sum
-        discounted_cumulative_returns[t] = running_sum
-
-    return discounted_cumulative_returns
+    T = rewards.shape[0]
+    trng = torch.arange(T)
+    exponents = -torch.sub(*torch.meshgrid(trng, torch.arange(T), indexing='ij'))
+    pow_arr = torch.triu(torch.pow(gamma, exponents))
+    return pow_arr @ rewards
 
 def policy_gradient_loss_discounted(logp: torch.Tensor, tensor_r: torch.Tensor, gamma: float) -> torch.Tensor:
     """
